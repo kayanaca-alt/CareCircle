@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const features = [
   {
     icon: "📋",
@@ -75,12 +77,12 @@ export default function Landing() {
               Pricing
             </a>
           </div>
-          <a
-            href="#waitlist"
-            className="rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 hover:shadow-md active:scale-[0.98]"
+          <Link
+            to="/dashboard"
+            className="rounded-full border border-brand-300 bg-white px-5 py-2 text-sm font-semibold text-brand-700 shadow-sm transition-all hover:bg-brand-50 hover:shadow-md active:scale-[0.98]"
           >
-            Get early access
-          </a>
+            Sign In
+          </Link>
         </div>
       </nav>
 
