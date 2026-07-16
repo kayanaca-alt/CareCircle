@@ -1,5 +1,5 @@
 {
-  "name": "carecircle",
+  "name": "kinovia",
   "private": true,
   "workspaces": [
     "packages/*"

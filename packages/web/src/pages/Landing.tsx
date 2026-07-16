@@ -50,7 +50,7 @@ const steps = [
     number: "3",
     title: "Family stays coordinated",
     description:
-      "Before a late fee hits or a prescription runs out, CareCircle alerts the right person. Small issues are caught early — before they become crises.",
+      "Before a late fee hits or a prescription runs out, Kinovia alerts the right person. Small issues are caught early — before they become crises.",
   },
 ];
 
@@ -62,9 +62,9 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-bold text-white">
-              C
+              K
             </span>
-            <span className="text-lg font-bold text-brand-800">CareCircle</span>
+            <span className="text-lg font-bold text-brand-800">Kinovia</span>
           </div>
           <div className="hidden items-center gap-8 sm:flex">
             <a href="#features" className="text-sm font-medium text-earth-600 hover:text-brand-600">
@@ -307,9 +307,9 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
           <div className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-500 text-xs font-bold text-white">
-              C
+              K
             </span>
-            <span className="text-sm font-semibold text-white">CareCircle</span>
+            <span className="text-sm font-semibold text-white">Kinovia</span>
           </div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-brand-300">
             <a href="#features" className="hover:text-white">
@@ -323,7 +323,7 @@ export default function Landing() {
             </a>
           </div>
           <p className="text-xs text-brand-400">
-            &copy; {new Date().getFullYear()} CareCircle. All rights reserved.
+            &copy; {new Date().getFullYear()} Kinovia. All rights reserved.
           </p>
         </div>
       </footer>

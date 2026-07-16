@@ -340,7 +340,7 @@ const server = Bun.serve({
     // API root
     if (method === "GET" && url.pathname === "/api") {
       return jsonResponse({
-        name: "CareCircle API",
+        name: "Kinovia API",
         version: "0.1.0",
         docs: "/api/health",
       });
@@ -515,4 +515,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`CareCircle API server running on http://localhost:${server.port}`);
+console.log(`Kinovia API server running on http://localhost:${server.port}`);
