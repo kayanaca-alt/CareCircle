@@ -107,7 +107,7 @@ const quickActions: QuickAction[] = [
   },
   {
     label: "MFA Hub",
-    href: "/mfa",
+    href: "/dashboard/mfa",
     icon: "🔐",
     description: "Manage shared access",
   },
@@ -181,7 +181,7 @@ const navLinks = [
   { label: "Dashboard", href: "/dashboard", icon: "🏠" },
   { label: "Bill Center", href: "/dashboard/bills", icon: "📋" },
   { label: "Document Vault", href: "/dashboard/vault", icon: "📁" },
-  { label: "MFA Hub", href: "/mfa", icon: "🔐" },
+  { label: "MFA Hub", href: "/dashboard/mfa", icon: "🔐" },
   { label: "Appointments", href: "/appointments", icon: "📅" },
 ];
 

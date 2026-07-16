@@ -19,6 +19,19 @@ interface DocumentItem {
   accessRoles: string[];
 }
 
+interface MFARequest {
+  id: string;
+  requester: string;
+  serviceName: string;
+  serviceCategory: "medical" | "financial" | "utilities" | "other";
+  relativeTime: string;
+  timestamp: string;
+  status: "pending" | "approved" | "denied";
+  actionBy?: string;
+  actionTime?: string;
+  denyReason?: string;
+}
+
 // ── Mock data ────────────────────────────────────────────────────────
 
 const bills: Bill[] = [
@@ -145,6 +158,61 @@ const documents: DocumentItem[] = [
   },
 ];
 
+const mfaRequests: MFARequest[] = [
+  {
+    id: "mfa1",
+    requester: "Mom",
+    serviceName: "Medicare.gov",
+    serviceCategory: "medical",
+    relativeTime: "2 min ago",
+    timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+    status: "pending",
+  },
+  {
+    id: "mfa2",
+    requester: "Yani",
+    serviceName: "Electric bill payment",
+    serviceCategory: "utilities",
+    relativeTime: "5 min ago",
+    timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    status: "pending",
+  },
+  {
+    id: "mfa3",
+    requester: "Mom",
+    serviceName: "Bank of America",
+    serviceCategory: "financial",
+    relativeTime: "15 min ago",
+    timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+    status: "approved",
+    actionBy: "Yani",
+    actionTime: "15 min ago",
+  },
+  {
+    id: "mfa4",
+    requester: "Mom",
+    serviceName: "Health Insurance Portal",
+    serviceCategory: "medical",
+    relativeTime: "1 hour ago",
+    timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    status: "approved",
+    actionBy: "Yani",
+    actionTime: "1 hour ago",
+  },
+  {
+    id: "mfa5",
+    requester: "Unknown",
+    serviceName: "Bank of America",
+    serviceCategory: "financial",
+    relativeTime: "3 hours ago",
+    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    status: "denied",
+    actionBy: "Yani",
+    actionTime: "3 hours ago",
+    denyReason: "Unknown sign-in attempt from new device",
+  },
+];
+
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function jsonResponse(data: unknown, status = 200): Response {
@@ -174,7 +242,7 @@ const server = Bun.serve({
       return new Response(null, {
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, PATCH, OPTIONS",
+          "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type",
         },
       });
@@ -256,6 +324,54 @@ const server = Bun.serve({
         return jsonResponse({ error: "Document not found" }, 404);
       }
       return jsonResponse(doc);
+    }
+
+    // ── MFA routes ───────────────────────────────────────────────
+
+    // GET /api/mfa/requests — list all MFA requests (optional ?status= filter)
+    if (method === "GET" && url.pathname === "/api/mfa/requests") {
+      const statusFilter = url.searchParams.get("status");
+      if (statusFilter) {
+        const filtered = mfaRequests.filter((r) => r.status === statusFilter);
+        return jsonResponse(filtered);
+      }
+      return jsonResponse(mfaRequests);
+    }
+
+    // POST /api/mfa/requests/:id/approve — approve a request
+    const mfaApproveMatch = url.pathname.match(/^\/api\/mfa\/requests\/(.+)\/approve$/);
+    if (method === "POST" && mfaApproveMatch) {
+      const req = mfaRequests.find((r) => r.id === mfaApproveMatch[1]);
+      if (!req) {
+        return jsonResponse({ error: "MFA request not found" }, 404);
+      }
+      if (req.status !== "pending") {
+        return jsonResponse({ error: "Request is not pending" }, 400);
+      }
+      req.status = "approved";
+      req.actionBy = "Yani";
+      req.actionTime = "Just now";
+      return jsonResponse(req);
+    }
+
+    // POST /api/mfa/requests/:id/deny — deny a request
+    const mfaDenyMatch = url.pathname.match(/^\/api\/mfa\/requests\/(.+)\/deny$/);
+    if (method === "POST" && mfaDenyMatch) {
+      const req = mfaRequests.find((r) => r.id === mfaDenyMatch[1]);
+      if (!req) {
+        return jsonResponse({ error: "MFA request not found" }, 404);
+      }
+      if (req.status !== "pending") {
+        return jsonResponse({ error: "Request is not pending" }, 400);
+      }
+      const body = await parseBody(req);
+      req.status = "denied";
+      req.actionBy = "Yani";
+      req.actionTime = "Just now";
+      if (body.reason && typeof body.reason === "string") {
+        req.denyReason = body.reason;
+      }
+      return jsonResponse(req);
     }
 
     // Fallback
