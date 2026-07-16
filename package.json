@@ -1,0 +1,14 @@
+{
+  "name": "carecircle",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "bun run --cwd packages/web dev",
+    "dev:server": "bun run --cwd packages/server dev",
+    "build:web": "bun run --cwd packages/web build",
+    "build:server": "bun run --cwd packages/server build",
+    "build": "bun run build:web && bun run build:server"
+  }
+}
