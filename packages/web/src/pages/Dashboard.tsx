@@ -79,7 +79,7 @@ export type AlertDetail =
 
 // ── Mock data ──────────────────────────────────────────────────────
 
-const parentStatusItems: ParentStatusItem[] = [
+const initialParentStatusItems: ParentStatusItem[] = [
   { id: "1", label: "Utilities", detail: "Current", status: "green" },
   { id: "2", label: "Rent/Mortgage", detail: "Paid", status: "green" },
   { id: "3", label: "Credit Card", detail: "Due in 5 Days", status: "yellow" },
@@ -257,9 +257,11 @@ function alertSeverityStyles(severity: Alert["severity"]): {
 function AlertDetailModal({
   alertId,
   onClose,
+  onMarkPaid,
 }: {
   alertId: string;
   onClose: () => void;
+  onMarkPaid: () => void;
 }) {
   const alert = alerts.find((a) => a.id === alertId);
   const detail = alertDetails[alertId];
@@ -332,7 +334,7 @@ function AlertDetailModal({
 
         {/* Body — type-specific */}
         <div className="px-5 py-5">
-          {detail.type === "bill" && <BillDetail detail={detail} />}
+          {detail.type === "bill" && <BillDetail detail={detail} onMarkPaid={onMarkPaid} />}
           {detail.type === "medicare" && <MedicareDetail detail={detail} />}
           {detail.type === "fraud" && <FraudDetail detail={detail} />}
           {detail.type === "prescription" && (
@@ -399,7 +401,43 @@ function SeverityBadge({ severity }: { severity: Alert["severity"] }) {
 
 // ── Bill detail ─────────────────────────────────────────────────────
 
-function BillDetail({ detail }: { detail: BillAlertDetail }) {
+function BillDetail({
+  detail,
+  onMarkPaid,
+}: {
+  detail: BillAlertDetail;
+  onMarkPaid: () => void;
+}) {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [reminderDate, setReminderDate] = useState("");
+  const [reminderConfirmed, setReminderConfirmed] = useState<string | null>(
+    null
+  );
+
+  const handleRemindMeLater = useCallback(() => {
+    setShowDatePicker(true);
+    setReminderConfirmed(null);
+  }, []);
+
+  const handleDateConfirm = useCallback(() => {
+    if (!reminderDate) return;
+    const formatted = new Date(
+      reminderDate + "T00:00:00"
+    ).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    setReminderConfirmed(formatted);
+    setShowDatePicker(false);
+  }, [reminderDate]);
+
+  const handleCancelDatePicker = useCallback(() => {
+    setShowDatePicker(false);
+    setReminderDate("");
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Mini bill summary card */}
@@ -408,7 +446,9 @@ function BillDetail({ detail }: { detail: BillAlertDetail }) {
           Bill Summary
         </p>
         <div className="mt-2 flex items-baseline justify-between">
-          <p className="text-sm font-medium text-earth-700">{detail.provider}</p>
+          <p className="text-sm font-medium text-earth-700">
+            {detail.provider}
+          </p>
           <p className="text-2xl font-bold text-earth-900">{detail.amount}</p>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-3 border-t border-amber-200 pt-3">
@@ -427,15 +467,62 @@ function BillDetail({ detail }: { detail: BillAlertDetail }) {
         </div>
       </div>
 
+      {/* Confirmation message */}
+      {reminderConfirmed && (
+        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
+          <span>✅</span>
+          <span>Reminder set for {reminderConfirmed}</span>
+        </div>
+      )}
+
+      {/* Date picker */}
+      {showDatePicker && (
+        <div className="rounded-xl border border-brand-200 bg-brand-50/50 px-4 py-3.5">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-700">
+            Pick a reminder date
+          </p>
+          <input
+            type="date"
+            value={reminderDate}
+            onChange={(e) => setReminderDate(e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+            className="mb-3 w-full rounded-lg border border-brand-200 px-3 py-2.5 text-sm text-earth-800 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={handleDateConfirm}
+              disabled={!reminderDate}
+              className="flex-1 rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={handleCancelDatePicker}
+              className="flex-1 rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm font-semibold text-earth-600 transition-all hover:bg-warm-50 active:scale-[0.98]"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
-      <div className="flex gap-3">
-        <button className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98]">
-          Mark as Paid
-        </button>
-        <button className="flex-1 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]">
-          Remind Me Later
-        </button>
-      </div>
+      {!showDatePicker && (
+        <div className="flex gap-3">
+          <button
+            onClick={onMarkPaid}
+            className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98]"
+          >
+            Mark as Paid
+          </button>
+          <button
+            onClick={handleRemindMeLater}
+            className="flex-1 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]"
+          >
+            Remind Me Later
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -729,25 +816,44 @@ function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
 
 // ── Section: Parent Status Overview ────────────────────────────────
 
-function ParentStatusOverview() {
+function ParentStatusOverview({
+  items,
+  flashId,
+}: {
+  items: ParentStatusItem[];
+  flashId: string | null;
+}) {
   return (
     <section>
       <h2 className="mb-4 text-lg font-bold text-brand-950">
         Parent Status Overview
       </h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {parentStatusItems.map((item) => (
-          <div
-            key={item.id}
-            className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-shadow hover:shadow-sm ${statusBg(item.status)}`}
-          >
-            <span className={`h-3 w-3 flex-shrink-0 rounded-full ${statusDot(item.status)}`} />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-earth-800">{item.label}</p>
-              <p className="truncate text-xs text-earth-500">{item.detail}</p>
+        {items.map((item) => {
+          const isFlashing = flashId === item.id;
+          return (
+            <div
+              key={item.id}
+              className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all duration-500 hover:shadow-sm ${
+                isFlashing
+                  ? "ring-2 ring-green-400 ring-offset-2 scale-[1.02]"
+                  : ""
+              } ${statusBg(item.status)}`}
+            >
+              <span
+                className={`h-3 w-3 flex-shrink-0 rounded-full transition-colors duration-500 ${statusDot(item.status)}`}
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-earth-800">
+                  {item.label}
+                </p>
+                <p className="truncate text-xs text-earth-500">
+                  {item.detail}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
@@ -755,7 +861,11 @@ function ParentStatusOverview() {
 
 // ── Section: Alerts Panel ──────────────────────────────────────────
 
-function AlertsPanel() {
+function AlertsPanel({
+  onMarkBillPaid,
+}: {
+  onMarkBillPaid: () => void;
+}) {
   const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
 
   const openDetail = useCallback((id: string) => {
@@ -765,6 +875,11 @@ function AlertsPanel() {
   const closeDetail = useCallback(() => {
     setSelectedAlertId(null);
   }, []);
+
+  const handleMarkPaid = useCallback(() => {
+    onMarkBillPaid();
+    setSelectedAlertId(null);
+  }, [onMarkBillPaid]);
 
   return (
     <section>
@@ -804,6 +919,7 @@ function AlertsPanel() {
         <AlertDetailModal
           alertId={selectedAlertId}
           onClose={closeDetail}
+          onMarkPaid={handleMarkPaid}
         />
       )}
     </section>
@@ -864,6 +980,22 @@ function QuickActions() {
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [parentStatusItems, setParentStatusItems] = useState<ParentStatusItem[]>(
+    initialParentStatusItems
+  );
+  const [statusFlashId, setStatusFlashId] = useState<string | null>(null);
+
+  const handleMarkBillPaid = useCallback(() => {
+    setParentStatusItems((prev) =>
+      prev.map((item) =>
+        item.id === "1"
+          ? { ...item, status: "green" as StatusLevel, detail: "Paid" }
+          : item
+      )
+    );
+    setStatusFlashId("1");
+    setTimeout(() => setStatusFlashId(null), 1500);
+  }, []);
 
   return (
     <div className="flex min-h-dvh bg-warm-50">
@@ -873,8 +1005,8 @@ export default function Dashboard() {
         <MobileHeader onMenuClick={() => setSidebarOpen(true)} />
 
         <main className="flex-1 space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <ParentStatusOverview />
-          <AlertsPanel />
+          <ParentStatusOverview items={parentStatusItems} flashId={statusFlashId} />
+          <AlertsPanel onMarkBillPaid={handleMarkBillPaid} />
           <ActivityFeed />
           <QuickActions />
         </main>
