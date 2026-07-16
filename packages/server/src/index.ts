@@ -10,6 +10,15 @@ interface Bill {
   paidDate: string | null;
 }
 
+interface DocumentItem {
+  id: string;
+  name: string;
+  category: "legal" | "medical" | "financial" | "personal";
+  addedDate: string;
+  fileType: "pdf" | "image" | "doc" | "spreadsheet";
+  accessRoles: string[];
+}
+
 // ── Mock data ────────────────────────────────────────────────────────
 
 const bills: Bill[] = [
@@ -66,6 +75,73 @@ const bills: Bill[] = [
     dueDate: "2026-07-10",
     status: "upcoming",
     paidDate: null,
+  },
+];
+
+const documents: DocumentItem[] = [
+  {
+    id: "d1",
+    name: "Power of Attorney",
+    category: "legal",
+    addedDate: "2026-03-15",
+    fileType: "pdf",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d2",
+    name: "Last Will & Testament",
+    category: "legal",
+    addedDate: "2026-01-22",
+    fileType: "pdf",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d3",
+    name: "Medicare Card",
+    category: "medical",
+    addedDate: "2026-06-01",
+    fileType: "image",
+    accessRoles: ["Mom", "Yani", "Doctor"],
+  },
+  {
+    id: "d4",
+    name: "Health Insurance Card",
+    category: "medical",
+    addedDate: "2026-06-01",
+    fileType: "image",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d5",
+    name: "2025 Tax Return",
+    category: "financial",
+    addedDate: "2026-04-10",
+    fileType: "pdf",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d6",
+    name: "Home Deed",
+    category: "financial",
+    addedDate: "2025-11-03",
+    fileType: "pdf",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d7",
+    name: "Emergency Contacts",
+    category: "personal",
+    addedDate: "2026-05-18",
+    fileType: "doc",
+    accessRoles: ["Mom", "Yani"],
+  },
+  {
+    id: "d8",
+    name: "Password List",
+    category: "personal",
+    addedDate: "2026-02-10",
+    fileType: "doc",
+    accessRoles: ["Mom"],
   },
 ];
 
@@ -158,6 +234,28 @@ const server = Bun.serve({
         }
       }
       return jsonResponse(bill);
+    }
+
+    // ── Document routes ──────────────────────────────────────────
+
+    // GET /api/documents — list all documents (optional ?category= filter)
+    if (method === "GET" && url.pathname === "/api/documents") {
+      const categoryFilter = url.searchParams.get("category");
+      if (categoryFilter) {
+        const filtered = documents.filter((d) => d.category === categoryFilter);
+        return jsonResponse(filtered);
+      }
+      return jsonResponse(documents);
+    }
+
+    // GET /api/documents/:id — single document
+    const docIdMatch = url.pathname.match(/^\/api\/documents\/(.+)$/);
+    if (method === "GET" && docIdMatch) {
+      const doc = documents.find((d) => d.id === docIdMatch[1]);
+      if (!doc) {
+        return jsonResponse({ error: "Document not found" }, 404);
+      }
+      return jsonResponse(doc);
     }
 
     // Fallback

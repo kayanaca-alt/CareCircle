@@ -101,7 +101,7 @@ const quickActions: QuickAction[] = [
   },
   {
     label: "Document Vault",
-    href: "/documents",
+    href: "/dashboard/vault",
     icon: "📁",
     description: "Store important documents",
   },
@@ -180,7 +180,7 @@ interface SidebarProps {
 const navLinks = [
   { label: "Dashboard", href: "/dashboard", icon: "🏠" },
   { label: "Bill Center", href: "/dashboard/bills", icon: "📋" },
-  { label: "Document Vault", href: "/documents", icon: "📁" },
+  { label: "Document Vault", href: "/dashboard/vault", icon: "📁" },
   { label: "MFA Hub", href: "/mfa", icon: "🔐" },
   { label: "Appointments", href: "/appointments", icon: "📅" },
 ];
