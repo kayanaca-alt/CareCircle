@@ -95,7 +95,7 @@ const activityFeed: ActivityEvent[] = [
 const quickActions: QuickAction[] = [
   {
     label: "Bill Center",
-    href: "/bills",
+    href: "/dashboard/bills",
     icon: "📋",
     description: "Track and manage bills",
   },
@@ -179,7 +179,7 @@ interface SidebarProps {
 
 const navLinks = [
   { label: "Dashboard", href: "/dashboard", icon: "🏠" },
-  { label: "Bill Center", href: "/bills", icon: "📋" },
+  { label: "Bill Center", href: "/dashboard/bills", icon: "📋" },
   { label: "Document Vault", href: "/documents", icon: "📁" },
   { label: "MFA Hub", href: "/mfa", icon: "🔐" },
   { label: "Appointments", href: "/appointments", icon: "📅" },
