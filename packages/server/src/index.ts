@@ -32,6 +32,37 @@ interface MFARequest {
   denyReason?: string;
 }
 
+type PermissionLevel = "observer" | "helper" | "poa";
+
+interface PermissionMember {
+  id: string;
+  name: string;
+  role: "parent" | "child";
+  relationship: string;
+  permissionLevel: PermissionLevel;
+  activeSince: string;
+}
+
+interface PermissionRequest {
+  id: string;
+  memberId: string;
+  memberName: string;
+  fromLevel: PermissionLevel;
+  toLevel: PermissionLevel;
+  status: "pending" | "approved" | "denied" | "cancelled";
+  requestedDate: string;
+  resolvedDate?: string;
+  relativeTime: string;
+}
+
+interface PermissionHistoryEntry {
+  id: string;
+  description: string;
+  timestamp: string;
+  relativeTime: string;
+  type: "grant" | "request" | "upgrade" | "downgrade" | "revoke";
+}
+
 // ── Mock data ────────────────────────────────────────────────────────
 
 const bills: Bill[] = [
@@ -213,6 +244,55 @@ const mfaRequests: MFARequest[] = [
   },
 ];
 
+const permissionMembers: PermissionMember[] = [
+  {
+    id: "mom",
+    name: "Mom",
+    role: "parent",
+    relationship: "Parent",
+    permissionLevel: "poa",
+    activeSince: "2025-06-01",
+  },
+  {
+    id: "yani",
+    name: "Yani",
+    role: "child",
+    relationship: "Daughter",
+    permissionLevel: "observer",
+    activeSince: "2026-01-15",
+  },
+];
+
+const permissionRequests: PermissionRequest[] = [
+  {
+    id: "pr1",
+    memberId: "yani",
+    memberName: "Yani",
+    fromLevel: "observer",
+    toLevel: "helper",
+    status: "pending",
+    requestedDate: "2026-07-14",
+    relativeTime: "2 days ago",
+  },
+];
+
+const permissionHistory: PermissionHistoryEntry[] = [
+  {
+    id: "ph1",
+    description: "Yani requested Helper access",
+    timestamp: "2026-07-14T10:30:00Z",
+    relativeTime: "Jul 14, 2026",
+    type: "request",
+  },
+  {
+    id: "ph2",
+    description: "Mom granted Yani Observer access",
+    timestamp: "2026-01-15T09:00:00Z",
+    relativeTime: "Jan 15, 2026",
+    type: "grant",
+  },
+];
+
 // ── Helpers ──────────────────────────────────────────────────────────
 
 function jsonResponse(data: unknown, status = 200): Response {
@@ -372,6 +452,62 @@ const server = Bun.serve({
         req.denyReason = body.reason;
       }
       return jsonResponse(req);
+    }
+
+    // ── Permission routes ─────────────────────────────────────────
+
+    // GET /api/permissions — family members + their permission levels
+    if (method === "GET" && url.pathname === "/api/permissions") {
+      return jsonResponse({
+        members: permissionMembers,
+        requests: permissionRequests.filter((r) => r.status === "pending"),
+        history: permissionHistory,
+      });
+    }
+
+    // POST /api/permissions/request-upgrade — request a permission upgrade
+    if (method === "POST" && url.pathname === "/api/permissions/request-upgrade") {
+      const body = await parseBody(req);
+      const memberId = body.memberId as string;
+      const toLevel = body.toLevel as string;
+
+      if (!memberId || !toLevel) {
+        return jsonResponse({ error: "memberId and toLevel are required" }, 400);
+      }
+
+      const member = permissionMembers.find((m) => m.id === memberId);
+      if (!member) {
+        return jsonResponse({ error: "Member not found" }, 404);
+      }
+
+      const validLevels = ["helper", "poa"];
+      if (!validLevels.includes(toLevel)) {
+        return jsonResponse({ error: "Invalid permission level" }, 400);
+      }
+
+      const newRequest: PermissionRequest = {
+        id: `pr${Date.now()}`,
+        memberId,
+        memberName: member.name,
+        fromLevel: member.permissionLevel,
+        toLevel: toLevel as PermissionLevel,
+        status: "pending",
+        requestedDate: new Date().toISOString().split("T")[0],
+        relativeTime: "just now",
+      };
+
+      permissionRequests.push(newRequest);
+
+      const historyEntry: PermissionHistoryEntry = {
+        id: `ph${Date.now()}`,
+        description: `${member.name} requested ${toLevel === "helper" ? "Helper" : "Power of Attorney"} access`,
+        timestamp: new Date().toISOString(),
+        relativeTime: "Just now",
+        type: "request",
+      };
+      permissionHistory.unshift(historyEntry);
+
+      return jsonResponse({ request: newRequest, member }, 201);
     }
 
     // Fallback
