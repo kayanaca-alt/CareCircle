@@ -5,6 +5,7 @@ import ParentApp from "./pages/ParentApp";
 import BillCenter from "./pages/BillCenter";
 import DocumentVault from "./pages/DocumentVault";
 import MFAHub from "./pages/MFAHub";
+import PermissionSystem from "./pages/PermissionSystem";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <Route path="/dashboard/bills" element={<BillCenter />} />
       <Route path="/dashboard/vault" element={<DocumentVault />} />
       <Route path="/dashboard/mfa" element={<MFAHub />} />
+      <Route path="/dashboard/permissions" element={<PermissionSystem />} />
       <Route path="/parent" element={<ParentApp />} />
       <Route path="*" element={<Landing />} />
     </Routes>

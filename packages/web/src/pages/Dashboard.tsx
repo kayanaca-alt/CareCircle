@@ -112,10 +112,10 @@ const quickActions: QuickAction[] = [
     description: "Manage shared access",
   },
   {
-    label: "Appointments",
-    href: "/appointments",
-    icon: "📅",
-    description: "Doctor visits & reminders",
+    label: "Permissions",
+    href: "/dashboard/permissions",
+    icon: "🛡️",
+    description: "Control family access",
   },
 ];
 
@@ -182,6 +182,7 @@ const navLinks = [
   { label: "Bill Center", href: "/dashboard/bills", icon: "📋" },
   { label: "Document Vault", href: "/dashboard/vault", icon: "📁" },
   { label: "MFA Hub", href: "/dashboard/mfa", icon: "🔐" },
+  { label: "Permissions", href: "/dashboard/permissions", icon: "🛡️" },
   { label: "Appointments", href: "/appointments", icon: "📅" },
 ];
 

@@ -323,6 +323,7 @@ function Sidebar({
     { label: "Bill Center", href: "/dashboard/bills", icon: "📋" },
     { label: "Document Vault", href: "/dashboard/vault", icon: "📁" },
     { label: "MFA Hub", href: "/dashboard/mfa", icon: "🔐" },
+    { label: "Permissions", href: "/dashboard/permissions", icon: "🛡️" },
     { label: "Appointments", href: "/appointments", icon: "📅" },
   ];
 
