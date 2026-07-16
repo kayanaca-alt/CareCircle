@@ -85,3 +85,4 @@ CareCircle uses a warm, earthy palette:
 - **Earth neutral** (`earth-*`): Text and subtle UI
 
 Typography: Inter (Google Fonts), with system fallbacks.
+
