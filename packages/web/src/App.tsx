@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import ParentApp from "./pages/ParentApp";
 import BillCenter from "./pages/BillCenter";
 import DocumentVault from "./pages/DocumentVault";
+import MFAHub from "./pages/MFAHub";
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/dashboard/bills" element={<BillCenter />} />
       <Route path="/dashboard/vault" element={<DocumentVault />} />
+      <Route path="/dashboard/mfa" element={<MFAHub />} />
       <Route path="/parent" element={<ParentApp />} />
       <Route path="*" element={<Landing />} />
     </Routes>
