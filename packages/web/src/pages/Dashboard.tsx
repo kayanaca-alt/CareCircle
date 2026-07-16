@@ -207,9 +207,9 @@ function Sidebar({ open, onClose }: SidebarProps) {
         {/* Sidebar header */}
         <div className="flex items-center gap-2 border-b border-brand-100/60 px-6 py-5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-bold text-white">
-            C
+            K
           </span>
-          <span className="text-lg font-bold text-brand-800">CareCircle</span>
+          <span className="text-lg font-bold text-brand-800">Kinovia</span>
         </div>
 
         {/* Nav links */}
@@ -258,9 +258,9 @@ function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-brand-100/60 bg-warm-50/90 px-4 py-3 backdrop-blur-md lg:hidden">
       <div className="flex items-center gap-2">
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-500 text-xs font-bold text-white">
-          C
+          K
         </span>
-        <span className="font-semibold text-brand-800">CareCircle</span>
+        <span className="font-semibold text-brand-800">Kinovia</span>
       </div>
       <button
         onClick={onMenuClick}

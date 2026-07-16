@@ -1,5 +1,5 @@
 {
-  "name": "@carecircle/server",
+  "name": "@kinovia/server",
   "private": true,
   "type": "module",
   "scripts": {

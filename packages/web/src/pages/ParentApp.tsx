@@ -301,7 +301,7 @@ export default function ParentApp() {
           <span className="text-xl">⚙️</span> Settings
         </a>
         <p className="mt-4 text-base text-earth-300">
-          CareCircle — here to help, not to hover 💚
+          Kinovia — here to help, not to hover 💚
         </p>
       </footer>
     </div>

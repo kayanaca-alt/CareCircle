@@ -1,4 +1,4 @@
-# CareCircle
+# Kinovia
 
 **Helping families navigate aging together.**
 
@@ -49,7 +49,7 @@ bun run build
 │   ├── web/              # Vite + React frontend
 │   │   ├── src/
 │   │   │   ├── pages/    # Page components (Landing, future dashboards)
-│   │   │   ├── styles/   # Tailwind CSS with CareCircle theme
+│   │   │   ├── styles/   # Tailwind CSS with Kinovia theme
 │   │   │   ├── App.tsx   # Router setup
 │   │   │   └── main.tsx  # Entry point
 │   │   ├── index.html
@@ -77,7 +77,7 @@ bun run build
 
 ## Design
 
-CareCircle uses a warm, earthy palette:
+Kinovia uses a warm, earthy palette:
 
 - **Brand green** (`brand-*`): Primary actions, branding
 - **Accent blue** (`accent-*`): Secondary highlights
