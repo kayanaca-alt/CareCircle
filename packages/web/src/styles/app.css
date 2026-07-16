@@ -48,6 +48,8 @@
   --color-earth-800: #573d2b;
   --color-earth-900: #4a3426;
   --color-earth-950: #2b1c14;
+
+  --font-serif: "Lora", Georgia, "Times New Roman", serif;
 }
 
 @layer base {
