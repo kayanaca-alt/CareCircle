@@ -241,7 +241,7 @@ export default function ParentApp() {
   }
 
   return (
-    <div className="mx-auto min-h-dvh max-w-lg px-4 py-6">
+    <div className="mx-auto min-h-dvh max-w-lg px-4 py-6 font-serif">
       {/* Header */}
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-extrabold text-brand-900">
