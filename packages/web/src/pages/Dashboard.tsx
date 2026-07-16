@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // ── TypeScript interfaces ──────────────────────────────────────────
@@ -32,6 +32,50 @@ export interface QuickAction {
   icon: string;
   description: string;
 }
+
+// ── Alert detail types ─────────────────────────────────────────────
+
+export interface BillAlertDetail {
+  type: "bill";
+  provider: string;
+  amount: string;
+  dueDate: string;
+  lastPaid: string;
+}
+
+export interface MedicareAlertDetail {
+  type: "medicare";
+  plan: string;
+  renewalDeadline: string;
+  formsSubmitted: number;
+  totalForms: number;
+  missingForms: string[];
+}
+
+export interface FraudAlertDetail {
+  type: "fraud";
+  account: string;
+  accountNumber: string;
+  merchant: string;
+  transactionDate: string;
+  flaggedReason: string;
+}
+
+export interface PrescriptionAlertDetail {
+  type: "prescription";
+  medication: string;
+  prescribedBy: string;
+  pharmacy: string;
+  lastFilled: string;
+  supply: string;
+  refillsRemaining: number;
+}
+
+export type AlertDetail =
+  | BillAlertDetail
+  | MedicareAlertDetail
+  | FraudAlertDetail
+  | PrescriptionAlertDetail;
 
 // ── Mock data ──────────────────────────────────────────────────────
 
@@ -70,6 +114,44 @@ const alerts: Alert[] = [
     actionable: true,
   },
 ];
+
+const alertDetails: Record<string, AlertDetail> = {
+  a1: {
+    type: "bill",
+    provider: "Aqua Water Co.",
+    amount: "$43.00",
+    dueDate: "This Friday",
+    lastPaid: "June 2",
+  },
+  a2: {
+    type: "medicare",
+    plan: "Medicare Part B",
+    renewalDeadline: "July 31",
+    formsSubmitted: 2,
+    totalForms: 4,
+    missingForms: [
+      "Annual Wellness Visit form",
+      "Prescription Drug Coverage attestation",
+    ],
+  },
+  a3: {
+    type: "fraud",
+    account: "Bank of America — Checking",
+    accountNumber: "…4521",
+    merchant: "Amazon Marketplace",
+    transactionDate: "Yesterday, 3:42 PM",
+    flaggedReason: "Unusual amount for this account",
+  },
+  a4: {
+    type: "prescription",
+    medication: "Lisinopril 10mg",
+    prescribedBy: "Dr. Patel",
+    pharmacy: "CVS — 123 Main St",
+    lastFilled: "June 15",
+    supply: "30-day supply",
+    refillsRemaining: 2,
+  },
+};
 
 const activityFeed: ActivityEvent[] = [
   {
@@ -168,6 +250,376 @@ function alertSeverityStyles(severity: Alert["severity"]): {
         dot: "bg-accent-500",
       };
   }
+}
+
+// ── Alert Detail Modal ─────────────────────────────────────────────
+
+function AlertDetailModal({
+  alertId,
+  onClose,
+}: {
+  alertId: string;
+  onClose: () => void;
+}) {
+  const alert = alerts.find((a) => a.id === alertId);
+  const detail = alertDetails[alertId];
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  if (!alert || !detail) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${alert.message} details`}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal card */}
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        {/* Header */}
+        <div
+          className={`flex items-center justify-between px-5 py-4 ${
+            alert.severity === "critical"
+              ? "bg-red-50"
+              : alert.severity === "warning"
+                ? "bg-amber-50"
+                : "bg-accent-50"
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <AlertIcon type={detail.type} />
+            <div>
+              <h3 className="text-base font-bold text-earth-900">
+                {alert.message}
+              </h3>
+              <SeverityBadge severity={alert.severity} />
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-earth-400 transition-colors hover:bg-black/10 hover:text-earth-700"
+            aria-label="Close"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* Body — type-specific */}
+        <div className="px-5 py-5">
+          {detail.type === "bill" && <BillDetail detail={detail} />}
+          {detail.type === "medicare" && <MedicareDetail detail={detail} />}
+          {detail.type === "fraud" && <FraudDetail detail={detail} />}
+          {detail.type === "prescription" && (
+            <PrescriptionDetail detail={detail} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Alert type icon ─────────────────────────────────────────────────
+
+function AlertIcon({ type }: { type: AlertDetail["type"] }) {
+  switch (type) {
+    case "bill":
+      return (
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-xl">
+          🧾
+        </span>
+      );
+    case "medicare":
+      return (
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 text-xl">
+          📋
+        </span>
+      );
+    case "fraud":
+      return (
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-100 text-xl">
+          ⚠️
+        </span>
+      );
+    case "prescription":
+      return (
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-100 text-xl">
+          💊
+        </span>
+      );
+  }
+}
+
+function SeverityBadge({ severity }: { severity: Alert["severity"] }) {
+  const label =
+    severity === "critical"
+      ? "Critical"
+      : severity === "warning"
+        ? "Needs Attention"
+        : "Heads Up";
+
+  const cls =
+    severity === "critical"
+      ? "bg-red-200 text-red-800"
+      : severity === "warning"
+        ? "bg-amber-200 text-amber-800"
+        : "bg-accent-200 text-accent-800";
+
+  return (
+    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
+// ── Bill detail ─────────────────────────────────────────────────────
+
+function BillDetail({ detail }: { detail: BillAlertDetail }) {
+  return (
+    <div className="space-y-4">
+      {/* Mini bill summary card */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-4 py-3.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+          Bill Summary
+        </p>
+        <div className="mt-2 flex items-baseline justify-between">
+          <p className="text-sm font-medium text-earth-700">{detail.provider}</p>
+          <p className="text-2xl font-bold text-earth-900">{detail.amount}</p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-3 border-t border-amber-200 pt-3">
+          <div>
+            <p className="text-[11px] text-earth-400">Due Date</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.dueDate}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-earth-400">Last Paid</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.lastPaid}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98]">
+          Mark as Paid
+        </button>
+        <button className="flex-1 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]">
+          Remind Me Later
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Medicare detail ─────────────────────────────────────────────────
+
+function MedicareDetail({ detail }: { detail: MedicareAlertDetail }) {
+  const pct = Math.round((detail.formsSubmitted / detail.totalForms) * 100);
+
+  return (
+    <div className="space-y-4">
+      {/* Plan info */}
+      <div className="rounded-xl border border-blue-200 bg-blue-50/60 px-4 py-3.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+          Plan
+        </p>
+        <p className="mt-1 text-base font-bold text-earth-900">{detail.plan}</p>
+        <p className="mt-0.5 text-sm text-earth-600">
+          Renewal deadline:{" "}
+          <span className="font-semibold text-earth-800">
+            {detail.renewalDeadline}
+          </span>
+        </p>
+
+        {/* Progress bar */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-earth-500">Forms submitted</span>
+            <span className="font-semibold text-earth-700">
+              {detail.formsSubmitted} of {detail.totalForms}
+            </span>
+          </div>
+          <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-blue-200">
+            <div
+              className="h-full rounded-full bg-blue-500 transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Missing forms */}
+      <div>
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-earth-500">
+          Missing Forms
+        </p>
+        <ul className="space-y-2">
+          {detail.missingForms.map((form) => (
+            <li
+              key={form}
+              className="flex items-center gap-2.5 rounded-lg border border-red-200 bg-red-50/50 px-3 py-2.5 text-sm text-earth-800"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-xs">
+                ❗
+              </span>
+              {form}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98]">
+          View Forms
+        </button>
+        <button className="flex-1 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]">
+          Set Reminder
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Fraud detail ────────────────────────────────────────────────────
+
+function FraudDetail({ detail }: { detail: FraudAlertDetail }) {
+  return (
+    <div className="space-y-4">
+      {/* Transaction card */}
+      <div className="rounded-xl border border-red-200 bg-red-50/60 px-4 py-3.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-red-700">
+          Flagged Transaction
+        </p>
+        <div className="mt-2 flex items-baseline justify-between">
+          <span className="text-2xl font-bold text-red-700">$900.00</span>
+          <span className="text-xs text-red-600">⚠ {detail.flaggedReason}</span>
+        </div>
+        <div className="mt-3 space-y-2 border-t border-red-200 pt-3">
+          <Row label="Account" value={`${detail.account} (${detail.accountNumber})`} />
+          <Row label="Merchant" value={detail.merchant} />
+          <Row label="Date" value={detail.transactionDate} />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col gap-2">
+        <button className="w-full rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-green-700 active:scale-[0.98]">
+          ✓ This was me
+        </button>
+        <button className="w-full rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition-all hover:bg-red-50 active:scale-[0.98]">
+          🚨 Report Fraud
+        </button>
+        <button className="w-full rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]">
+          📞 Call Mom
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Prescription detail ─────────────────────────────────────────────
+
+function PrescriptionDetail({
+  detail,
+}: {
+  detail: PrescriptionAlertDetail;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Medication card */}
+      <div className="rounded-xl border border-accent-200 bg-accent-50/60 px-4 py-3.5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent-700">
+          Medication
+        </p>
+        <p className="mt-1 text-base font-bold text-earth-900">
+          {detail.medication}
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-y-2.5 border-t border-accent-200 pt-3">
+          <div>
+            <p className="text-[11px] text-earth-400">Prescribed by</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.prescribedBy}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-earth-400">Pharmacy</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.pharmacy}
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-earth-400">Last Filled</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.lastFilled} ({detail.supply})
+            </p>
+          </div>
+          <div>
+            <p className="text-[11px] text-earth-400">Refills Left</p>
+            <p className="text-sm font-semibold text-earth-800">
+              {detail.refillsRemaining}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Refill warning */}
+      <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <span>⏰</span>
+        <span>
+          Only 7 days left — request a refill soon to avoid running out.
+        </span>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button className="flex-1 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-600 active:scale-[0.98]">
+          Request Refill
+        </button>
+        <button className="flex-1 rounded-lg border border-brand-200 bg-white px-4 py-2.5 text-sm font-semibold text-brand-700 transition-all hover:bg-brand-50 active:scale-[0.98]">
+          Set Reminder
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between text-sm">
+      <span className="text-earth-500">{label}</span>
+      <span className="font-medium text-earth-800">{value}</span>
+    </div>
+  );
 }
 
 // ── Sidebar ────────────────────────────────────────────────────────
@@ -304,6 +756,16 @@ function ParentStatusOverview() {
 // ── Section: Alerts Panel ──────────────────────────────────────────
 
 function AlertsPanel() {
+  const [selectedAlertId, setSelectedAlertId] = useState<string | null>(null);
+
+  const openDetail = useCallback((id: string) => {
+    setSelectedAlertId(id);
+  }, []);
+
+  const closeDetail = useCallback(() => {
+    setSelectedAlertId(null);
+  }, []);
+
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
@@ -325,7 +787,10 @@ function AlertsPanel() {
                 {alert.message}
               </p>
               {alert.actionable && (
-                <button className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 shadow-sm ring-1 ring-brand-200 transition-all hover:bg-brand-50 hover:shadow active:scale-[0.97]">
+                <button
+                  onClick={() => openDetail(alert.id)}
+                  className="flex-shrink-0 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 shadow-sm ring-1 ring-brand-200 transition-all hover:bg-brand-50 hover:shadow active:scale-[0.97]"
+                >
                   Review
                 </button>
               )}
@@ -333,6 +798,14 @@ function AlertsPanel() {
           );
         })}
       </div>
+
+      {/* Alert detail modal */}
+      {selectedAlertId && (
+        <AlertDetailModal
+          alertId={selectedAlertId}
+          onClose={closeDetail}
+        />
+      )}
     </section>
   );
 }
