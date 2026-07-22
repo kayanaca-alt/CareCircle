@@ -1,0 +1,39 @@
+Category,Line Item,Year 1,Year 2,Year 3
+REVENUE,,,,,
+,Direct-to-Family Subscriptions,$48,000,$150,000,$450,000
+,Employer/B2B Partnerships,$0,$150,000,$600,000
+,Medicare Advantage/Insurer Deals,$0,$0,$450,000
+,Total Revenue,$48,000,$300,000,$1,500,000
+,,,,,
+COST OF REVENUE,,,,,
+,Hosting & Infrastructure,$2,400,$6,000,$18,000
+,Third-Party APIs (Plaid, Twilio, etc.),$600,$3,000,$12,000
+,Customer Support Tools,$600,$2,400,$6,000
+,Total COGS,$3,600,$11,400,$36,000
+,,,,,
+GROSS PROFIT,$44,400,$288,600,$1,464,000
+,Gross Margin,92.5%,96.2%,97.6%
+,,,,,
+OPERATING EXPENSES,,,,,
+,Engineering (1-2 FTE),$36,000,$96,000,$180,000
+,Sales & Marketing,$9,600,$60,000,$300,000
+,Compliance & Legal (HIPAA, SOC 2),$6,000,$18,000,$36,000
+,General & Administrative,$3,000,$9,000,$18,000
+,Total Operating Expenses,$54,600,$183,000,$534,000
+,,,,,
+EBITDA,-$10,200,$105,600,$930,000
+,EBITDA Margin,-21.3%,35.2%,62.0%
+,,,,,
+OTHER EXPENSES,,,,,
+,Payment Processing (Stripe ~3%),$1,440,$9,000,$45,000
+,Total Other Expenses,$1,440,$9,000,$45,000
+,,,,,
+NET INCOME,-$11,640,$96,600,$885,000
+,Net Margin,-24.3%,32.2%,59.0%
+,,,,,
+KEY METRICS,,,,,
+,Total Families,200,1,000,5,000
+,Avg Revenue Per Family (Monthly),$20,$25,$25
+,Monthly Churn Rate,5.0%,4.0%,3.5%
+,Customer Acquisition Cost,$50,$60,$70
+,LTV:CAC Ratio,5.2x,7.3x,10.1x
